@@ -8,7 +8,7 @@
 import Foundation
 
 
-struct APIInfo: Decodable, Identifiable, Equatable {
+struct APIInfo: Decodable, Identifiable, Equatable, Hashable {
        
     let type: Int
     let name: String
@@ -22,9 +22,19 @@ struct APIInfo: Decodable, Identifiable, Equatable {
     static func == (lhs: APIInfo, rhs: APIInfo) -> Bool {
         lhs.id == rhs.id
     }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(type)
+        hasher.combine(name)
+    }
 }
 
-struct Reason: Decodable, Identifiable {
+struct Reason: Decodable, Identifiable, Hashable {
     let id: String
     let info: String
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(info)
+    }
 }

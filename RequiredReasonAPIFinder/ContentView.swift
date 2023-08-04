@@ -16,17 +16,28 @@ struct ContentView: View {
     private var matchedURLs: [DetectedUsage] = []
     
     @State
+    private var matchedAPIs: [APIInfo] = []
+    
+    @State
     private var apiInfoArray: [APIInfo] = []
     
     @State
     private var searchedOnce: Bool = false
     
+    private let infoURL = URL(string: "https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api")!
+    
+    let columns = [
+        GridItem(.adaptive(minimum: 80))
+    ]
+    
     var body: some View {
         NavigationView {
             VStack {
                 Button(action: {
-                    searchWordInFiles()
-                    searchedOnce = true
+                    Task(priority: .background) {
+                        await searchWordInFiles()
+                        searchedOnce = true
+                    }
                 }, label: {
                     Text("Check API usage")
                         .lineLimit(-1)
@@ -42,17 +53,26 @@ struct ContentView: View {
                 if !fileURLs.isEmpty {
                     Button(action: {
                         fileURLs.removeAll()
+                        matchedAPIs.removeAll()
+                        matchedURLs.removeAll()
                     }, label: {
                         Text("Clear all")
                     })
-            }
+                }
                 
                 DropView(fileURLs: $fileURLs)
             }.frame(minWidth: 200.0)
             
             if !matchedURLs.isEmpty {
                 VStack {
-                    Text("Matching Files:")
+                    HStack {
+                        Button {
+                            NSWorkspace.shared.open(infoURL)
+                        } label: {
+                            Image(systemName: "info")
+                        }
+                        Text("Matching Files")
+                    }
                     List(matchedURLs, id: \.self) { item in
                         HStack {
                             Text(item.fileURL.lastPathComponent)
@@ -72,12 +92,41 @@ struct ContentView: View {
                         }
                         .frame(minHeight: 30.0)
                     }
+                    HStack {
+                        Text("Possible usage")
+                    }
+                    List(matchedAPIs, id: \.self) { item in
+                        VStack {
+                            Text(item.name)
+                                .font(.headline)
+                                .bold()
+                                .padding(.top)
+                                ForEach(item.reasons, id: \.self) { reason in
+                                    HStack {
+                                        Text(reason.id)
+                                            .bold()
+                                            .frame(width: 50)
+                                        Text(reason.info)
+                                            .multilineTextAlignment(.leading)
+                                        Spacer()
+                                    }.padding()
+                                }
+                        }
+                        .background(Rectangle()
+                            .cornerRadius(8.0)
+                            .foregroundColor(.gray)
+                            .opacity(0.2)
+                        )
+                        .frame(minHeight: 30.0)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Group {
                     if fileURLs.isEmpty {
-                        Text("Drag folders to search")
+                        HStack {
+                            Text("Drag folders to search")
+                        }
                     } else {
                         if searchedOnce {
                             Text("No plist changes reqiured")
@@ -105,25 +154,26 @@ struct ContentView: View {
             NSWorkspace.shared.activateFileViewerSelecting([url])
         }
     }
-        
-    private func searchWordInFiles() {
+    
+    private func searchWordInFiles() async {
         for fileURL in fileURLs {
             if fileURL.isDirectory {
-                searchWordInDirectory(fileURL)
+                await searchWordInDirectory(fileURL)
             } else {
-                searchWordInFile(fileURL)
+                await searchWordInFile(fileURL)
             }
         }
+        matchedAPIs = Array(Set<APIInfo>.init(matchedURLs.compactMap({$0.api})))
     }
     
-    private func searchWordInDirectory(_ directoryURL: URL) {
+    private func searchWordInDirectory(_ directoryURL: URL) async  {
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
             for fileURL in fileURLs {
                 if fileURL.isDirectory {
-                    searchWordInDirectory(fileURL)
+                    await searchWordInDirectory(fileURL)
                 } else {
-                    searchWordInFile(fileURL)
+                    await searchWordInFile(fileURL)
                 }
             }
         } catch {
@@ -131,7 +181,7 @@ struct ContentView: View {
         }
     }
     
-    private func searchWordInFile(_ fileURL: URL) {
+    private func searchWordInFile(_ fileURL: URL) async {
         do {
             let fileContent = try String(contentsOf: fileURL)
             
