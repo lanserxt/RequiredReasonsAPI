@@ -9,17 +9,24 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @State private var fileURLs: [URL] = []
-    @State private var matchedURLs: [URL] = []
+    @State
+    private var fileURLs: [URL] = []
+    
+    @State
+    private var matchedURLs: [DetectedUsage] = []
     
     @State
     private var apiInfoArray: [APIInfo] = []
+    
+    @State
+    private var searchedOnce: Bool = false
     
     var body: some View {
         NavigationView {
             VStack {
                 Button(action: {
                     searchWordInFiles()
+                    searchedOnce = true
                 }, label: {
                     Text("Check API usage")
                         .lineLimit(-1)
@@ -32,20 +39,52 @@ struct ContentView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
+                if !fileURLs.isEmpty {
+                    Button(action: {
+                        fileURLs.removeAll()
+                    }, label: {
+                        Text("Clear all")
+                    })
+            }
+                
                 DropView(fileURLs: $fileURLs)
             }.frame(minWidth: 200.0)
             
             if !matchedURLs.isEmpty {
-                Group {
+                VStack {
                     Text("Matching Files:")
-                    List(fileURLs, id: \.self) { url in
-                        Text(url.lastPathComponent)
+                    List(matchedURLs, id: \.self) { item in
+                        HStack {
+                            Text(item.fileURL.lastPathComponent)
+                            Spacer()
+                            Text(item.api.name)
+                                .bold()
+                            Button {
+                                showInFinder(url: item.fileURL)
+                            } label: {
+                                Image(systemName: "folder")
+                            }
+                            Button {
+                                NSWorkspace.shared.open(item.fileURL)
+                            } label: {
+                                Image(systemName: "eye")
+                            }
+                        }
+                        .frame(minHeight: 30.0)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Group {
-                    Text("No plist changes reqiured")
+                    if fileURLs.isEmpty {
+                        Text("Drag folders to search")
+                    } else {
+                        if searchedOnce {
+                            Text("No plist changes reqiured")
+                        } else {
+                            Text("Press 'Check API usage'")
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -54,9 +93,19 @@ struct ContentView: View {
             loadAPIInfo()
         }
         .padding()
-        .navigationTitle("Drag & Drop App")
+        .navigationTitle("Reasoned API Finder")
     }
     
+    func showInFinder(url: URL?) {
+        guard let url = url else { return }
+        
+        if url.isDirectory {
+            NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: url.path)
+        } else {
+            NSWorkspace.shared.activateFileViewerSelecting([url])
+        }
+    }
+        
     private func searchWordInFiles() {
         for fileURL in fileURLs {
             if fileURL.isDirectory {
@@ -85,12 +134,31 @@ struct ContentView: View {
     private func searchWordInFile(_ fileURL: URL) {
         do {
             let fileContent = try String(contentsOf: fileURL)
-            if fileContent.contains("getBuffSize") {
-                // Assuming the file contains the exact word 'getBuffSize'
-                matchedURLs.append(fileURL)
+            
+            print("Checking \(fileURL.lastPathComponent)")
+            for api in apiInfoArray {
+                if fileContent.containsAny(api.funcs) {
+                    // Assuming the file contains the exact word 'getBuffSize'
+                    matchedURLs.append(DetectedUsage(fileURL: fileURL, api: api))
+                    print("Found \(api.name)")
+                }
             }
+            
         } catch {
             print("Error reading file: \(error.localizedDescription)")
+        }
+    }
+    
+    struct DetectedUsage: Identifiable, Hashable {
+        let fileURL: URL
+        let api: APIInfo
+        
+        var id: String {
+            fileURL.absoluteString
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(fileURL.absoluteString)
         }
     }
     
@@ -146,6 +214,18 @@ struct DropView: View {
 extension URL {
     var isDirectory: Bool {
         return (try? resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+    }
+}
+
+extension String {
+    func containsAny(_ list: [String]) -> Bool {
+        for item in list {
+            if contains(item) {
+                print("what: \(item)")
+                return true
+            }
+        }
+        return false
     }
 }
 

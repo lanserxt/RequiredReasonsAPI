@@ -8,14 +8,13 @@
       "fileModificationDate",
       "contentModificationDateKey",
       "creationDateKey",
-      "getattrlist",
-      "getattrlistbulk",
-      "fgetattrlist",
-      "stat",
-      "fstat",
-      "fstatat",
-      "lstat",
-      "getattrlistat"
+      "getattrlist(",
+      "getattrlistbulk(",
+      "fgetattrlist(",
+      "fstat(",
+      "fstatat(",
+      "lstat(",
+      "getattrlistat("
     ],
     "reasons": [
       {
@@ -37,7 +36,7 @@
     "name": "System boot time APIs",
     "funcs": [
       "systemUptime",
-      "mach_absolute_time"
+      "mach_absolute_time("
     ],
     "reasons": [
       {
@@ -56,13 +55,13 @@
       "volumeTotalCapacityKey",
       "systemFreeSize",
       "systemSize",
-      "statfs",
-      "statvfs",
-      "fstatfs",
-      "fstatvfs",
-      "getattrlist",
-      "fgetattrlist",
-      "getattrlistat"
+      "statfs(",
+      "statvfs(",
+      "fstatfs(",
+      "fstatvfs(",
+      "getattrlist(",
+      "fgetattrlist(",
+      "getattrlistat("
     ],
     "reasons": [
       {
@@ -96,7 +95,7 @@
     "type": 4,
     "name": "User defaults APIs",
     "funcs": [
-      "UserDefaults"
+      "UserDefaults.standard", "@AppStorage"
     ],
     "reasons": [
       {
