@@ -1,2 +1,2 @@
 # RequiredReasonsAPI
-RequiredReasonsAPI - macOS application to fins required iOS API usage
+RequiredReasonsAPI - macOS application to find required iOS API usage
