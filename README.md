@@ -13,10 +13,45 @@ For developers legitimately leveraging these APIs, the supplementary steps shoul
 Get folders to check the files from the user and search for function and key strings
 
 ## Features
-
+* **Plain macOS App:** The iOS App API Reason Checker is designed as a straightforward macOS application, making it easy to clone and use without any complex setup.
+* **Draggable Folders to Scan:** Users can simply drag and drop folders containing iOS applications onto the app interface, initiating a thorough analysis of the "required reason" APIs within the apps.
+* **Easy List Management:** The tool provides a user-friendly list management interface, allowing users to track and organize the iOS applications that have been scanned or are scheduled for analysis.
+* **API Info:** Gain insights into the specific "required reason" APIs being utilized by each app, helping you understand their intended usage and ensure compliance with Apple's regulations.
+* **File Detection and Opening:** Detected files with API usage are conveniently marked within the app interface. Users can seamlessly open these files directly in Finder or Xcode for further examination and adjustments.
 ## Limitations
+For not it's just a basic search of specific functions and keys by string compare. So if you would have realm file like this:
+
+```
+import RealmSwift
+
+class MyRealmObject: Object {
+     @Persisted var id = UUID().uuidString
+     @Persisted var name = ""
+     @Persisted var modificationDate = Date()
+    
+    override static func primaryKey() -> String? {
+        return "id"
+    }
+}
+```
+
+@Persisted var **modificationDate** = Date() will be marked as **File timestamp APIs**
 
 ## Specification
+- Swift 5
+- async/await
+- Plain SwiftUI
+- No dependencies
+- \>=macOS 12
+
+## How to Use
+* **Installation:** Clone this repository and run the code in Xcode
+* **Scanning Apps:** Drag and drop folders containing iOS applications onto the app window to initiate the scanning process. The tool will automatically analyze the "required reason" APIs within the apps.
+* **List Management:** Use the built-in list management features to keep track of scanned apps, upcoming scans, and any necessary actions.
+* **API Insights:** Review the API information provided for each app to ensure proper and transparent API usage.
+* **Opening Files:** Easily access files detected with API usage by clicking on them. Open these files directly in Finder or Xcode to make necessary adjustments.
+
+
 
 ## Screenshot
 ![DemoScreen](DemoScreen.png?raw=true "Optional title")
@@ -32,5 +67,6 @@ Get folders to check the files from the user and search for function and key str
   </a>
 </div>
 
+Note: The Required reason API Finder is not affiliated with or endorsed by Apple Inc. It is an independent project created by developers for developers.
 
 
