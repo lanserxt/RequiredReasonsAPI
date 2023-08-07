@@ -21,6 +21,17 @@ struct ResultsView: View {
     @Binding
     var searchedOnce: Bool
     
+    
+    enum ResultType: String, Equatable, CaseIterable {
+        case list  = "Info"
+        case code = "Code"
+
+        var localizedName: LocalizedStringKey { LocalizedStringKey(rawValue) }
+    }
+    
+    @State
+    private var switchIndex: ResultType = .list
+    
     private let infoURL = URL(string: "https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api")!
     
     var body: some View {
@@ -56,29 +67,20 @@ struct ResultsView: View {
                 HStack {
                     Text("Possible usage")
                 }
-                List(matchedAPIs, id: \.self) { item in
-                    VStack {
-                        Text(item.name)
-                            .font(.headline)
-                            .bold()
-                            .padding(.top)
-                            ForEach(item.reasons, id: \.self) { reason in
-                                HStack {
-                                    Text(reason.id)
-                                        .bold()
-                                        .frame(width: 50)
-                                    Text(reason.info)
-                                        .multilineTextAlignment(.leading)
-                                    Spacer()
-                                }.padding()
-                            }
+                Picker("", selection: $switchIndex) {
+                    ForEach(ResultType.allCases, id: \.self) { value in
+                                        Text(value.localizedName)
+                                            .tag(value)
+                                    }
                     }
-                    .background(Rectangle()
-                        .cornerRadius(8.0)
-                        .foregroundColor(.gray)
-                        .opacity(0.2)
-                    )
-                    .frame(minHeight: 30.0)
+                            .pickerStyle(.segmented)
+                            .frame(maxWidth: 200)
+                if switchIndex == .list {
+                    ResultsList(matchedAPIs: $matchedAPIs)
+                } else {
+                    ResultsCode(matchedAPIs: $matchedAPIs)
+                        .frame(minHeight: 200.0)
+                        .frame(maxWidth: .infinity)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

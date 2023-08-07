@@ -10,6 +10,7 @@ import Foundation
 struct APIInfo: Decodable {
     let type: Int
     let name: String
+    let apiType: String
     let funcs: [String]
     let reasons: [Reason]
 }
