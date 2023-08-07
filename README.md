@@ -18,6 +18,7 @@ Get folders to check the files from the user and search for function and key str
 * **Easy List Management:** The tool provides a user-friendly list management interface, allowing users to track and organize the iOS applications that have been scanned or are scheduled for analysis.
 * **API Info:** Gain insights into the specific "required reason" APIs being utilized by each app, helping you understand their intended usage and ensure compliance with Apple's regulations.
 * **File Detection and Opening:** Detected files with API usage are conveniently marked within the app interface. Users can seamlessly open these files directly in Finder or Xcode for further examination and adjustments.
+* **Sample manifest generation:** Detected APIs wrapped in dictionaries for privacy manifest file. Users can easily copy-past this code and adjust.
 ## Limitations
 For not it's just a basic search of specific functions and keys by string compare. So if you would have realm file like this:
 
